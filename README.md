@@ -1,3 +1,4 @@
+```bash
 End-to-End-ML-Pipeline/
 ├── infra/
 │   ├── main.tf            # AWS provider, backend config
@@ -17,3 +18,5 @@ End-to-End-ML-Pipeline/
 ├── requirements.txt
 └── .github/workflows/
     └── deploy.yml         # CI/CD pipeline definition
+
+```
