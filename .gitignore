@@ -1,0 +1,11 @@
+# Credenciales de AWS (privadas)
+colaborador-mlops_accessKeys.csv
+colaborador-mlops_credentials.csv
+
+# Caché local de Terraform
+.terraform/
+infra/.terraform/
+
+# Archivos de estado de Terraform
+*.tfstate
+*.tfstate.backup
