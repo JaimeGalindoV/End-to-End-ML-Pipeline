@@ -3,6 +3,9 @@ resource "aws_instance" "mlops_3_12_instance" {
     instance_type = "t2.micro"
     vpc_security_group_ids = [aws_security_group.mlops_sg.id]
     iam_instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
+
+    user_data = file("${path.module}/../scripts/bootstrap.sh")
+
     tags = {
         Name = "MLOps 3.12 EC2 Instance"
     }
@@ -20,8 +23,8 @@ resource "aws_security_group" "mlops_sg" {
     }
 
     ingress {
-        from_port = 80
-        to_port = 80
+        from_port = 8000
+        to_port = 8000
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }

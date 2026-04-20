@@ -28,8 +28,8 @@ resource "aws_iam_policy" "ec2_s3_policy" {
                 "s3:ListBucket"
             ]
             Resource = [
-                "arn:aws:s3:::3-12-bucket-chido",
-                "arn:aws:s3:::3-12-bucket-chido/*"
+                aws_s3_bucket.data_bucket.arn,
+                aws_s3_bucket.data_bucket.arn + "/*"
             ]
         }]
     })
