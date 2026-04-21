@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import os
 from pathlib import Path
 from typing import Any
@@ -58,7 +59,6 @@ DEFAULT_RANDOM_STATE = 42
 DEFAULT_S3_MODEL_KEY = "models/model.joblib"
 
 # --- Variables de entorno (Configurables) ---
-# Aquí sí usamos os.getenv porque esperamos que AWS o GitHub Actions inyecten estos valores
 DEFAULT_S3_BUCKET = os.getenv("S3_BUCKET")
 DEFAULT_AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
@@ -128,7 +128,7 @@ def train_model(
 
     predictions = model.predict(X_test)
     metrics = {
-        "rmse": float(mean_squared_error(y_test, predictions, squared=False)),
+        "rmse": float(math.sqrt(mean_squared_error(y_test, predictions))),
         "mae": float(mean_absolute_error(y_test, predictions)),
         "r2": float(r2_score(y_test, predictions)),
     }
@@ -209,6 +209,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=DEFAULT_AWS_REGION,
         help="AWS region used by boto3. Set this from AWS_REGION in your .env.",
     )
+    parser.add_argument(
+        "--skip-upload",
+        action="store_true",
+        help="Train and save the model locally without uploading it to S3.",
+    )
     return parser
 
 
@@ -224,15 +229,18 @@ def main() -> int:
         random_state=args.random_state,
     )
     model_path = serialize_model(model, args.model_path)
-    upload_model_to_s3(
-        model_path=model_path,
-        bucket=args.s3_bucket,
-        key=args.s3_model_key,
-        region_name=args.aws_region,
-    )
 
     print(f"Saved model to {model_path}")
-    print(f"Uploaded model to s3://{args.s3_bucket}/{args.s3_model_key}")
+    if args.skip_upload:
+        print("Skipped S3 upload")
+    else:
+        upload_model_to_s3(
+            model_path=model_path,
+            bucket=args.s3_bucket,
+            key=args.s3_model_key,
+            region_name=args.aws_region,
+        )
+        print(f"Uploaded model to s3://{args.s3_bucket}/{args.s3_model_key}")
     print(
         "Evaluation metrics: "
         f"rmse={metrics['rmse']:.4f}, mae={metrics['mae']:.4f}, r2={metrics['r2']:.4f}"
