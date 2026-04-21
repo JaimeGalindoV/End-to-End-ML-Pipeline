@@ -1,6 +1,8 @@
-boto3
+fastapi
+uvicorn
 joblib
 numpy
+boto3
+python-dotenv
 scikit-learn
 pytest
-dotenv
