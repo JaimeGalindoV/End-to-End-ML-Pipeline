@@ -51,12 +51,16 @@ def load_dotenv_file(dotenv_path: str | Path = ".env") -> None:
 
 load_dotenv_file()
 
-DEFAULT_MODEL_PATH = Path(os.getenv("models/model.joblib"))
-DEFAULT_TEST_SIZE = float(os.getenv("0.2"))
-DEFAULT_RANDOM_STATE = int(os.getenv("42"))
+# --- Valores por defecto (Constantes) ---
+DEFAULT_MODEL_PATH = Path("models/model.joblib")
+DEFAULT_TEST_SIZE = 0.2
+DEFAULT_RANDOM_STATE = 42
+DEFAULT_S3_MODEL_KEY = "models/model.joblib"
+
+# --- Variables de entorno (Configurables) ---
+# Aquí sí usamos os.getenv porque esperamos que AWS o GitHub Actions inyecten estos valores
 DEFAULT_S3_BUCKET = os.getenv("S3_BUCKET")
-DEFAULT_S3_MODEL_KEY = os.getenv("models/model.joblib")
-DEFAULT_AWS_REGION = os.getenv("AWS_REGION")
+DEFAULT_AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
 
 def load_data(data_path: str | Path | None = None) -> tuple[np.ndarray, np.ndarray]:
