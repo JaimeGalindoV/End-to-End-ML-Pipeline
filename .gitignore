@@ -10,3 +10,6 @@ infra/.terraform.lock.hcl
 # Archivos de estado de Terraform
 *.tfstate
 *.tfstate.backup
+.env
+__pycache__
+models
