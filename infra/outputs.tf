@@ -11,3 +11,4 @@ output "s3_bucket_name" {
 output "s3_bucket_url" {
     description = "URL del bucket de S3"
     value = "s3://${aws_s3_bucket.data_bucket.bucket}/"
+}

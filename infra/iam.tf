@@ -29,7 +29,7 @@ resource "aws_iam_policy" "ec2_s3_policy" {
             ]
             Resource = [
                 aws_s3_bucket.data_bucket.arn,
-                aws_s3_bucket.data_bucket.arn + "/*"
+                "${aws_s3_bucket.data_bucket.arn}/*"
             ]
         }]
     })

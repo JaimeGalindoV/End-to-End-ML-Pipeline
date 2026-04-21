@@ -10,7 +10,7 @@ terraform {
     backend "s3" {
         bucket = "backend-bucket-chido"
         key = "mlops-pipeline/terraform.tfstate"
-        region = aws_region
+        region = "us-east-1"
         profile = "colaborador-mlops"
     }
 }
