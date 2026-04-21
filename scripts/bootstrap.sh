@@ -5,17 +5,19 @@ exec > /var/log/bootstrap.log 2>&1
 
 # actualizar el sistema
 sudo apt-get update -y
-
-# instalar python y pip
-sudo apt-get install -y git python3 python3-pip
+sudo apt-get install -y git python3 python3-pip python3-venv
 
 # clonar el repo
-git clone "https://github.com/JaimeGalindoV/End-to-End-ML-Pipeline.git" /home
-
+cd /home/
+git clone "https://github.com/JaimeGalindoV/End-to-End-ML-Pipeline.git"
 cd /home/End-to-End-ML-Pipeline
 
-# instalar dependencias de requirements.txt
-pip3 install -r requirements.txt
+# Crear un entorno virtual
+python3 -m venv venv
+source venv/bin/activate
+
+# Instalar dependencias en  del venv
+pip install -r requirements.txt
 
 # exponer variables de entorno
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
@@ -37,9 +39,10 @@ set +a
 
 
 # ejecutar el script de entrenamiento
-python3 src/train.py
+venv/bin/python src/train.py
 
 # ejecutar la app
 # nohup se usa para ejecutar el proceso en segundo plano, redirigiendo la salida
 # a un archivo de log para poder revisar cualquier error o salida del proceso
-nohup python3 src/app.py > /home/End-to-End-ML-Pipeline/app.log 2>&1 &
+nohup venv/bin/python src/app.py > /home/End-to-End-ML-Pipeline/app.log 2>&1 &
+echo "Bootstrap script completed successfully."

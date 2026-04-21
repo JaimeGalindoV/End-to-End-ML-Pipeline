@@ -3,4 +3,5 @@ resource "aws_s3_bucket" "data_bucket" {
     tags = {
         Name = "MLOps 3.12 Pipeline Data Bucket"
     }
+    force_destroy = true
 }

@@ -5,6 +5,7 @@ colaborador-mlops_credentials.csv
 # Caché local de Terraform
 .terraform/
 infra/.terraform/
+infra/.terraform.lock.hcl
 
 # Archivos de estado de Terraform
 *.tfstate
