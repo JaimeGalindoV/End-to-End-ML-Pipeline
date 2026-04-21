@@ -63,6 +63,6 @@ jobs:
           echo "Esperando 120s a que el servidor EC2 y la API levanten..."
           sleep 120
           curl -f -X POST \
-            http://${{ needs.deploy.outputs.endpoint_ip }}:80/predict \
+            http://${{ needs.deploy.outputs.endpoint_ip }}:8000/predict \
             -H "Content-Type: application/json" \
             -d '{"features": [8.3, 41.0, 6.98, 1.02, 322.0, 2.56, 37.88, -122.23]}'
