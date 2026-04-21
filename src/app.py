@@ -1,8 +1,13 @@
 import os
+import boto3
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from dotenv import load_dotenv
+load_dotenv()  
+
+
 
 MODEL_DIR = os.getenv("MODEL_LOCAL_DIR", "./")
 MODEL_NAME = os.getenv("MODEL_FILENAME", "model.joblib")
@@ -12,8 +17,22 @@ MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
 app = FastAPI(
     title="California Housing ML API",
     description="API de Inferencia para la predicción de precios de casas",
-    version="1.0"
+    version="1.0" 
 )
+
+
+def download_model_from_s3():
+    bucket = os.getenv("S3_BUCKET_NAME")
+    s3_key = os.getenv("S3_MODEL_KEY", "models/model.joblib")
+    
+    
+    if not bucket:
+        return 
+
+    s3 = boto3.client("s3")
+    print(f"Descargando modelo desde s3://{bucket}/{s3_key}...")
+    s3.download_file(bucket, s3_key, MODEL_PATH)
+    print("Modelo descargado exitosamente.")
 
 
 model = None
@@ -22,6 +41,7 @@ model = None
 def load_model():
     global model
     try:
+        download_model_from_s3()
         model = joblib.load(MODEL_PATH)
         print(f"Modelo cargado exitosamente desde: {MODEL_PATH}")
     except Exception as e:
@@ -58,3 +78,8 @@ def predict(request: PredictionRequest):
         return {"prediction": float(prediction[0])}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno al predecir: {str(e)}")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
