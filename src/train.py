@@ -131,6 +131,11 @@ def upload_model_to_s3(
     `models/model.joblib` so Person 2 can rely on a stable contract.
     """
 
+    # --- AGREGADO PARA QA: Evita que el script truene si no hay credenciales durante el test ---
+    if os.getenv("SKIP_S3_UPLOAD") == "true":
+        print("Modo QA detectado: Saltando subida a S3 para evitar error de credenciales.")
+        return
+
     if not bucket:
         raise ValueError("S3_BUCKET environment variable is required for S3 upload")
 
@@ -206,7 +211,9 @@ def main() -> int:
     model_path = serialize_model(model, args.model_path)
 
     print(f"Saved model to {model_path}")
-    if args.skip_upload:
+    
+    # --- AGREGADO PARA QA: Respetar la variable de entorno de prueba ---
+    if args.skip_upload or os.getenv("SKIP_S3_UPLOAD") == "true":
         print("Skipped S3 upload")
     else:
         upload_model_to_s3(
@@ -224,4 +231,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import sys
+    sys.exit(main())
