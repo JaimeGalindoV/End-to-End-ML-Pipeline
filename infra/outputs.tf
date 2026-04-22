@@ -1,6 +1,6 @@
 output "ec2_instance_public_ip" {
-    description = "IP Pública de la instancia de EC2"
-    value = aws_instance.mlops_3_12_instance.public_ip
+    description = "IP elástica pública de la instancia de EC2"
+    value = aws_eip.mlops_eip.public_ip
 }
 
 output "s3_bucket_name" {

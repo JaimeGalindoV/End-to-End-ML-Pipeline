@@ -41,8 +41,44 @@ set +a
 # ejecutar el script de entrenamiento
 venv/bin/python src/train.py
 
-# ejecutar la app
-# nohup se usa para ejecutar el proceso en segundo plano, redirigiendo la salida
-# a un archivo de log para poder revisar cualquier error o salida del proceso
-nohup venv/bin/python src/app.py > /home/End-to-End-ML-Pipeline/app.log 2>&1 &
+sudo chown -R ubuntu:ubuntu /home/End-to-End-ML-Pipeline
+
+sudo apt-get install -y nginx
+
+# Crear configuración de Nginx (Reverse Proxy)
+echo 'server {
+    listen 80;
+    server_name _; 
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}' | sudo tee /etc/nginx/sites-available/default
+
+# Reiniciar Nginx
+sudo systemctl restart nginx
+
+# Crear y activar el servicio de Systemd
+cat << 'EOF' | sudo tee /etc/systemd/system/mlops.service
+[Unit]
+Description=MLOps FastAPI Service
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/End-to-End-ML-Pipeline
+EnvironmentFile=/etc/environment
+ExecStart=/home/End-to-End-ML-Pipeline/venv/bin/python /home/End-to-End-ML-Pipeline/src/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable mlops
+sudo systemctl start mlops
+
 echo "Bootstrap script completed successfully."
