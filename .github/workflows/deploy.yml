@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - main
-      - 'feature/github-actions-pipeline'
+      - dev
 
 jobs:
   ci:
