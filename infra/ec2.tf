@@ -11,6 +11,10 @@ resource "aws_instance" "mlops_3_12_instance" {
     }
 }
 
+resource "aws_eip" "mlops_eip" {
+  instance = aws_instance.mlops_3_12_instance.id
+}
+
 resource "aws_security_group" "mlops_sg" {
     name = "mlops_sg"
     description = "allow SSH and HTTP access"
@@ -25,6 +29,13 @@ resource "aws_security_group" "mlops_sg" {
     ingress {
         from_port = 8000
         to_port = 8000
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port = 80
+        to_port = 80
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
