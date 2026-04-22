@@ -27,7 +27,7 @@ jobs:
         run: flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Run unit tests
-        run: pytest tests/test_train.py -v
+        run: python -m pytest tests/test_train.py -v
 
   deploy:
     needs: ci
@@ -37,14 +37,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: hashicorp/setup-terraform@v3
+      # Usar acción oficial de AWS para autenticación segura
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      - name: Setup AWS Credentials for "colaborador-mlops" profile
-        run: |
-          mkdir -p ~/.aws
-          echo "[colaborador-mlops]" > ~/.aws/credentials
-          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+      - uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Apply
         id: tf
@@ -52,17 +53,26 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
-          echo "endpoint_ip=$(terraform output -raw ec2_public_ip)" >> "$GITHUB_OUTPUT"
+          echo "endpoint_ip=$(terraform output -raw ec2_instance_public_ip)" >> "$GITHUB_OUTPUT"
 
   validate:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke test
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests pytest python-dotenv
+
+      - name: Run Smoke Test
+        env:
+          API_HOST: ${{ needs.deploy.outputs.endpoint_ip }}
         run: |
           echo "Esperando 120s a que el servidor EC2 y la API levanten..."
           sleep 120
-          curl -f -X POST \
-            http://${{ needs.deploy.outputs.endpoint_ip }}:8000/predict \
-            -H "Content-Type: application/json" \
-            -d '{"features": [8.3, 41.0, 6.98, 1.02, 322.0, 2.56, 37.88, -122.23]}'
+          python -m pytest tests/test_endpoint.py -v
