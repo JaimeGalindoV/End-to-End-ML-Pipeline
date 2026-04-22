@@ -1,3 +1,4 @@
 .env
 __pycache__
 models
+API_IP=http://54.175.134.143:8000
