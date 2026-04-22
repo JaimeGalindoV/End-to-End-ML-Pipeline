@@ -1,7 +1,7 @@
 variable "aws_profile" {
     description = "Perfil de AWS a usar"
     type = string
-    default = "colaborador-mlops"
+    default = null
 }
 
 variable "aws_region" {
