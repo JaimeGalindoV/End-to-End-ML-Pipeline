@@ -7,7 +7,7 @@ def test_train_script_results():
     Valida que el entrenamiento genere el archivo localmente.
     Pasamos una variable de entorno para evitar la subida a S3.
     """
-   T
+   
     env = os.environ.copy()
     env["SKIP_S3_UPLOAD"] = "true"
     
