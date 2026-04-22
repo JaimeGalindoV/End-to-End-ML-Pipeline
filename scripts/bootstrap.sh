@@ -45,4 +45,21 @@ venv/bin/python src/train.py
 # nohup se usa para ejecutar el proceso en segundo plano, redirigiendo la salida
 # a un archivo de log para poder revisar cualquier error o salida del proceso
 nohup venv/bin/python src/app.py > /home/End-to-End-ML-Pipeline/app.log 2>&1 &
+
+sudo apt-get install -y nginx
+
+# Crear configuración de Nginx (Reverse Proxy)
+echo 'server {
+    listen 80;
+    server_name _; 
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}' | sudo tee /etc/nginx/sites-available/default
+
+# Reiniciar Nginx
+sudo systemctl restart nginx
+
 echo "Bootstrap script completed successfully."
