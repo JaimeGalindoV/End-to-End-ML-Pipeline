@@ -73,7 +73,6 @@ jobs:
         env:
           API_HOST: ${{ needs.deploy.outputs.endpoint_ip }}
         run: |
-          # Bucle de reintento: Intenta hasta 30 veces, esperando 10s entre cada intento
           echo "Esperando a que la API esté lista (max 5 min)..."
           for i in {1..30}; do
             if curl -f http://${{ needs.deploy.outputs.endpoint_ip }}:8000/health; then
