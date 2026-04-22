@@ -21,45 +21,20 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
+from dotenv import load_dotenv
 
-
-def load_dotenv_file(dotenv_path: str | Path = ".env") -> None:
-    """Load simple KEY=VALUE pairs from a local `.env` file if it exists.
-
-    Existing environment variables win, so GitHub Actions or EC2 variables
-    can override local development settings.
-    """
-
-    path = Path(dotenv_path)
-    if not path.is_absolute():
-        path = Path.cwd() / path
-
-    if not path.exists():
-        return
-
-    with path.open("r", encoding="utf-8") as handle:
-        for raw_line in handle:
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-
-            key, value = line.split("=", 1)
-            key = key.strip()
-            value = value.strip().strip('"').strip("'")
-            if key:
-                os.environ.setdefault(key, value)
-
-
-load_dotenv_file()
+load_dotenv()
 
 # --- Valores por defecto (Constantes) ---
-DEFAULT_MODEL_PATH = Path("models/model.joblib")
 DEFAULT_TEST_SIZE = 0.2
 DEFAULT_RANDOM_STATE = 42
-DEFAULT_S3_MODEL_KEY = "models/model.joblib"
 
 # --- Variables de entorno (Configurables) ---
-DEFAULT_S3_BUCKET = os.getenv("S3_BUCKET")
+MODEL_DIR = os.getenv("MODEL_LOCAL_DIR", "./")
+MODEL_NAME = os.getenv("MODEL_FILENAME", "model.joblib")
+DEFAULT_MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
+DEFAULT_S3_MODEL_KEY = os.getenv("S3_MODEL_KEY", "models/model.joblib")
+DEFAULT_S3_BUCKET = os.getenv("S3_BUCKET_NAME")
 DEFAULT_AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
 
@@ -156,6 +131,11 @@ def upload_model_to_s3(
     `models/model.joblib` so Person 2 can rely on a stable contract.
     """
 
+    # --- AGREGADO PARA QA: Evita que el script truene si no hay credenciales durante el test ---
+    if os.getenv("SKIP_S3_UPLOAD") == "true":
+        print("Modo QA detectado: Saltando subida a S3 para evitar error de credenciales.")
+        return
+
     if not bucket:
         raise ValueError("S3_BUCKET environment variable is required for S3 upload")
 
@@ -231,7 +211,9 @@ def main() -> int:
     model_path = serialize_model(model, args.model_path)
 
     print(f"Saved model to {model_path}")
-    if args.skip_upload:
+    
+    # --- AGREGADO PARA QA: Respetar la variable de entorno de prueba ---
+    if args.skip_upload or os.getenv("SKIP_S3_UPLOAD") == "true":
         print("Skipped S3 upload")
     else:
         upload_model_to_s3(
@@ -249,4 +231,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import sys
+    sys.exit(main())
